@@ -2,7 +2,7 @@ const resultado = document.getElementById('resultado');
 const ctx = document.getElementById('grafico').getContext('2d');
 
 const API_KEY = '8895f04f8f01972418450dc216c38cd3';
-const URL = `https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=${API_KEY}&file_type=json`;
+const URL = `https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=8895f04f8f01972418450dc216c38cd3&file_type=json`;
 
 let grafico;
 
@@ -63,3 +63,4 @@ async function obtenerPrimaRiesgo() {
 // Ejecutar al inicio y actualizar cada hora
 obtenerPrimaRiesgo();
 setInterval(obtenerPrimaRiesgo, 3600000);
+
