@@ -1,28 +1,32 @@
 const resultado = document.getElementById('resultado');
 const ctx = document.getElementById('grafico').getContext('2d');
-
-const API_KEY = '8895f04f8f01972418450dc216c38cd3';
-const URL = `https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=8895f04f8f01972418450dc216c38cd3&file_type=json`;
-
 let grafico;
+
+const API_KEY = '8895f04f8f01972418450dc216c38cd3'; // Reemplaza con tu API Key de FRED
+const URL_FRED = `https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=${API_KEY}&file_type=json`;
+const URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(URL_FRED)}`;
 
 async function obtenerPrimaRiesgo() {
     try {
         const respuesta = await fetch(URL);
+        if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
+
         const datos = await respuesta.json();
+        if (!datos.observations) throw new Error('No se recibieron datos.');
 
         const observaciones = datos.observations.filter(obs => obs.value !== ".");
         const fechas = observaciones.map(obs => obs.date);
         const valores = observaciones.map(obs => parseFloat(obs.value));
 
-        // Mostrar el último valor
         const ultima = observaciones[observaciones.length - 1];
+
+        // Mostrar la última prima de riesgo
         resultado.innerHTML = `
-            <p>Prima de riesgo High Yield: ${parseFloat(ultima.value).toFixed(2)} %</p>
+            <p>Prima de riesgo High Yield: <strong>${parseFloat(ultima.value).toFixed(2)} %</strong></p>
             <p>Última actualización: ${ultima.date}</p>
         `;
 
-        // Si el gráfico ya existe, actualizamos datos
+        // Crear o actualizar el gráfico
         if (grafico) {
             grafico.data.labels = fechas;
             grafico.data.datasets[0].data = valores;
@@ -55,12 +59,13 @@ async function obtenerPrimaRiesgo() {
             });
         }
     } catch (error) {
-        resultado.innerHTML = 'Error al obtener datos de la prima de riesgo.';
-        console.error(error);
+        resultado.innerHTML = '⚠️ Error al obtener datos de la prima de riesgo.';
+        console.error('Detalles del error:', error);
     }
 }
 
-// Ejecutar al inicio y actualizar cada hora
+// Ejecutar al cargar
 obtenerPrimaRiesgo();
-setInterval(obtenerPrimaRiesgo, 3600000);
 
+// Actualizar cada hora
+setInterval(obtenerPrimaRiesgo, 3600000);
