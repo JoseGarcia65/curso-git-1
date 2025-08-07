@@ -4,88 +4,74 @@ const resultado = document.getElementById('resultado');
 const ctx = document.getElementById('grafico').getContext('2d');
 let grafico;
 
-const API_KEY = '8895f04f8f01972418450dc216c38cd3'; // Pon aquí tu API Key de FRED
+const API_KEY = '8895f04f8f01972418450dc216c38cd3'; // Reemplaza con tu API Key de FRED
+const URL_FRED = `https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=${API_KEY}&file_type=json`;
+const URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(URL_FRED)}`;
 
-// Series a mostrar
-const SERIES = [
-    { id: 'BAMLH0A0HYM2', nombre: 'High Yield total', color: 'blue' },
-    { id: 'BAMLH0A2HYBB', nombre: 'BB', color: 'green' },
-    { id: 'BAMLH0A3HYB', nombre: 'B', color: 'orange' },
-    { id: 'BAMLH0A4HYC', nombre: 'CCC', color: 'red' }
-];
-
-// Función para obtener datos de una serie
-async function obtenerSerie(id) {
-    const urlFRED = `https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${API_KEY}&file_type=json`;
-    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(urlFRED)}`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`Error HTTP: ${resp.status}`);
-    const datos = await resp.json();
-    const observaciones = datos.observations.filter(obs => obs.value !== ".");
-    return observaciones.map(obs => ({
-        fecha: obs.date,
-        valor: parseFloat(obs.value)
-    }));
-}
-
-// Función principal
-async function cargarDatos() {
+async function obtenerPrimaRiesgo() {
     try {
-        resultado.textContent = 'Cargando datos de FRED...';
-        const datosSeries = await Promise.all(SERIES.map(s => obtenerSerie(s.id)));
+        const respuesta = await fetch(URL);
+        if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
 
-        // Fechas comunes (usamos la primera serie como referencia)
-        const fechas = datosSeries[0].map(d => d.fecha);
+        const datos = await respuesta.json();
+        if (!datos.observations) throw new Error('No se recibieron datos.');
 
-        // Crear datasets para Chart.js
-        const datasets = SERIES.map((serie, idx) => ({
-            label: serie.nombre,
-            data: datosSeries[idx].map(d => d.valor),
-            borderColor: serie.color,
-            borderWidth: 2,
-            fill: false,
-            tension: 0.1
-        }));
+        const observaciones = datos.observations.filter(obs => obs.value !== ".");
+        const fechas = observaciones.map(obs => obs.date);
+        const valores = observaciones.map(obs => parseFloat(obs.value));
 
-        // Mostrar últimas primas de riesgo
-        const resumen = SERIES.map((s, idx) => {
-            const ultima = datosSeries[idx][datosSeries[idx].length - 1];
-            return `${s.nombre}: ${ultima.valor.toFixed(2)}% (${ultima.fecha})`;
-        }).join('<br>');
-        resultado.innerHTML = `<strong>Últimas primas de riesgo:</strong><br>${resumen}`;
+        const ultima = observaciones[observaciones.length - 1];
 
-        // Dibujar gráfico
+        // Mostrar la última prima de riesgo
+        resultado.innerHTML = `
+            <p>Prima de riesgo High Yield: <strong>${parseFloat(ultima.value).toFixed(2)} %</strong></p>
+            <p>Última actualización: ${ultima.date}</p>
+        `;
+
+        // Crear o actualizar el gráfico
         if (grafico) {
             grafico.data.labels = fechas;
-            grafico.data.datasets = datasets;
+            grafico.data.datasets[0].data = valores;
             grafico.update();
         } else {
             grafico = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: fechas,
-                    datasets: datasets
+                    datasets: [{
+                        label: 'Prima de riesgo (%)',
+                        data: valores,
+                        borderColor: 'blue',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }]
                 },
                 options: {
                     responsive: true,
                     scales: {
-                        x: { ticks: { maxTicksLimit: 10 } },
-                        y: { beginAtZero: false }
+                        x: {
+                            ticks: { maxTicksLimit: 10 }
+                        },
+                        y: {
+                            beginAtZero: false
+                        }
                     }
                 }
             });
         }
-
     } catch (error) {
-        resultado.innerHTML = '⚠️ Error al obtener datos de la API. Se muestra iframe de FRED más abajo.';
-        console.error('Error al obtener datos:', error);
+        resultado.innerHTML = '⚠️ Error al obtener datos de la prima de riesgo.';
+        console.error('Detalles del error:', error);
     }
 }
 
-// Cargar al inicio
-cargarDatos();
+// Ejecutar al cargar
+obtenerPrimaRiesgo();
 
 // Actualizar cada hora
-setInterval(cargarDatos, 3600000);
+setInterval(obtenerPrimaRiesgo, 3600000);
+
+
 
 
