@@ -2,7 +2,7 @@ const resultado = document.getElementById('resultado');
 const ctx = document.getElementById('grafico').getContext('2d');
 let grafico;
 
-const API_KEY = 'TU_API_KEY'; // Pon aquí tu API Key de FRED
+const API_KEY = '8895f04f8f01972418450dc216c38cd3'; // Pon aquí tu API Key de FRED
 
 // Series a mostrar
 const SERIES = [
@@ -85,3 +85,4 @@ cargarDatos();
 
 // Actualizar cada hora
 setInterval(cargarDatos, 3600000);
+
