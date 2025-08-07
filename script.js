@@ -71,7 +71,3 @@ obtenerPrimaRiesgo();
 
 // Actualizar cada hora
 setInterval(obtenerPrimaRiesgo, 3600000);
-
-
-
-
