@@ -2,14 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prima de riesgo de bonos basura</title>
+    <title>Primas de riesgo de bonos basura</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Prima de riesgo de bonos basura (High Yield)</h1>
+    <h1>Primas de riesgo de bonos basura</h1>
     <div id="resultado">Cargando datos...</div>
 
-    <canvas id="grafico" width="800" height="400"></canvas>
+    <canvas id="grafico" width="900" height="450"></canvas>
+
+    <h2>Vista alternativa (iframe FRED)</h2>
+    <iframe 
+        src="https://fred.stlouisfed.org/graph/graph-landing.php?g=1Lc8Z&width=670&height=475" 
+        scrolling="no" frameborder="0" 
+        style="overflow:hidden; width:670px; height:525px;" 
+        allowTransparency="true" loading="lazy">
+    </iframe>
 
     <script src="script.js"></script>
 </body>
